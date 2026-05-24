@@ -1,5 +1,7 @@
 import { Router, Response } from 'express';
-import { authenticate } from '../middleware/auth.js';
+import { authenticateOptionalJwt } from '../middleware/auth.js';
+import { authenticateApiKey } from '../middleware/apiKeyAuth.js';
+import { tierRateLimit } from '../middleware/rateLimit.js';
 import { AuthRequest } from '../types/index.js';
 import { isValidPhoneNumber, isValidMessageContent, getSessionForUser } from '../utils/validators.js';
 import whatsappService from '../services/whatsapp.service.js';
@@ -7,7 +9,10 @@ import db from '../db/index.js';
 
 const router = Router();
 
-router.use(authenticate);
+// Messages routes support both JWT and API key auth
+router.use(authenticateOptionalJwt);
+router.use(authenticateApiKey);
+router.use(tierRateLimit);
 
 /**
  * POST /api/messages/send
@@ -46,7 +51,7 @@ router.post('/send', async (req: AuthRequest, res: Response): Promise<void> => {
       return;
     }
 
-    // Check rate limit
+    // Check message-specific rate limit
     const rateCheck = whatsappService.checkMessageRateLimit(userId, tier);
     if (!rateCheck.allowed) {
       res.status(429).json({
@@ -98,14 +103,23 @@ router.get('/history', (req: AuthRequest, res: Response): void => {
 
   const messages = db.prepare(
     'SELECT id, to_number, message_type, content, status, created_at FROM messages_log WHERE user_id = ? AND session_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?'
-  ).all(userId, sessionId, queryLimit, queryOffset);
+  ).all(userId, sessionId, queryLimit, queryOffset) as Array<{ id: number; to_number: string; message_type: string; content: string; status: string; created_at: string }>;
 
   const total = db.prepare(
     'SELECT COUNT(*) as count FROM messages_log WHERE user_id = ? AND session_id = ?'
   ).get(userId, sessionId) as { count: number };
 
+  const serialized = messages.map(m => ({
+    id: m.id,
+    toNumber: m.to_number,
+    messageType: m.message_type,
+    content: m.content,
+    status: m.status,
+    createdAt: m.created_at,
+  }));
+
   res.json({
-    messages,
+    messages: serialized,
     pagination: {
       total: total.count,
       limit: queryLimit,

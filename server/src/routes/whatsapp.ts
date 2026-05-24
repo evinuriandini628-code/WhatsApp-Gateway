@@ -1,5 +1,6 @@
 import { Router, Response } from 'express';
 import { authenticate } from '../middleware/auth.js';
+import { tierRateLimit } from '../middleware/rateLimit.js';
 import { AuthRequest } from '../types/index.js';
 import { isValidPhoneNumber } from '../utils/validators.js';
 import whatsappService from '../services/whatsapp.service.js';
@@ -7,6 +8,7 @@ import whatsappService from '../services/whatsapp.service.js';
 const router = Router();
 
 router.use(authenticate);
+router.use(tierRateLimit);
 
 /**
  * POST /api/whatsapp/connect
@@ -63,7 +65,16 @@ router.post('/connect', async (req: AuthRequest, res: Response): Promise<void> =
 router.get('/sessions', (req: AuthRequest, res: Response): void => {
   const userId = req.user!.id;
   const sessions = whatsappService.getUserSessions(userId);
-  res.json({ sessions });
+
+  const serialized = sessions.map(s => ({
+    id: s.id,
+    phoneNumber: s.phone_number,
+    status: s.status,
+    createdAt: s.created_at,
+    lastConnected: s.last_connected,
+  }));
+
+  res.json({ sessions: serialized });
 });
 
 /**
@@ -80,7 +91,15 @@ router.get('/sessions/:id/status', (req: AuthRequest, res: Response): void => {
     return;
   }
 
-  res.json({ session });
+  res.json({
+    session: {
+      id: session.id,
+      phoneNumber: session.phone_number,
+      status: session.status,
+      createdAt: session.created_at,
+      lastConnected: session.last_connected,
+    },
+  });
 });
 
 /**

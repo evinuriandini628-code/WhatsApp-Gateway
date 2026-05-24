@@ -10,25 +10,43 @@ interface SessionInfo {
 }
 
 interface KeyInfo {
-  id: number;
+  id: string;
   name: string;
+}
+
+interface TierInfo {
+  tier: string;
+  maxNumbers: number;
+  maxRequestsPerDay: number;
 }
 
 export default function Dashboard() {
   const { user } = useAuth();
   const [sessions, setSessions] = useState<SessionInfo[]>([]);
   const [keys, setKeys] = useState<KeyInfo[]>([]);
+  const [tierLimits, setTierLimits] = useState<Record<string, { sessions: number; messages: number }>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [sessionsRes, keysRes] = await Promise.all([
+        const [sessionsRes, keysRes, tiersRes] = await Promise.all([
           api.get('/whatsapp/sessions'),
           api.get('/keys'),
+          api.get('/tiers'),
         ]);
         setSessions(sessionsRes.data.sessions || []);
         setKeys(keysRes.data.keys || []);
+
+        const tiers = tiersRes.data.tiers as TierInfo[];
+        const limitsMap: Record<string, { sessions: number; messages: number }> = {};
+        for (const t of tiers) {
+          limitsMap[t.tier] = {
+            sessions: t.maxNumbers,
+            messages: t.maxRequestsPerDay,
+          };
+        }
+        setTierLimits(limitsMap);
       } catch {
         // Silently handle errors for dashboard stats
       } finally {
@@ -38,27 +56,22 @@ export default function Dashboard() {
     fetchData();
   }, []);
 
-  const tierLimits: Record<string, { sessions: number; messages: number; keys: number }> = {
-    free: { sessions: 1, messages: 100, keys: 1 },
-    pro: { sessions: 5, messages: 5000, keys: 10 },
-    enterprise: { sessions: -1, messages: 50000, keys: -1 },
-  };
-
-  const limits = tierLimits[user?.tier || 'free'];
+  const currentTier = user?.tier || 'free';
+  const limits = tierLimits[currentTier] || { sessions: 1, messages: 100 };
 
   const stats = [
     {
       icon: Smartphone,
       label: 'Active Sessions',
       value: sessions.filter(s => s.status === 'connected').length,
-      limit: limits.sessions === -1 ? 'Unlimited' : `/ ${limits.sessions}`,
+      limit: `/ ${limits.sessions}`,
       color: 'bg-green-100 text-green-700',
     },
     {
       icon: Key,
       label: 'API Keys',
       value: keys.length,
-      limit: limits.keys === -1 ? 'Unlimited' : `/ ${limits.keys}`,
+      limit: '',
       color: 'bg-blue-100 text-blue-700',
     },
     {
