@@ -2,7 +2,7 @@
   "id": "FEAT-005",
   "type": "fix",
   "description": "Address v2 code review issues: UNIQUE constraint on api_keys.key, unbounded request_log, hardcoded Pricing page, rate limit scope, and duplicate getJwtSecret.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "Remove UNIQUE constraint from api_keys.key column in schema.ts (key_hash is now the lookup column)",
     "Add index on (user_id, timestamp) for request_log; add cleanup function for rows older than 48 hours, called on startup and every hour",
@@ -22,5 +22,5 @@
     "pnpm run test"
   ],
   "blocked_reason": null,
-  "findings": null
+  "findings": "All 5 v2 review issues addressed. UNIQUE constraint removed from api_keys.key. Request log now has index and periodic cleanup (startup + hourly). Pricing page fetches from /api/tiers. Rate limit only applies to mutation endpoints (POST/DELETE). getJwtSecret extracted to shared utils/jwt.ts. Build and all tests pass."
 }
