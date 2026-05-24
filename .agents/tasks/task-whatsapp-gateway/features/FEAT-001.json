@@ -2,7 +2,7 @@
   "id": "FEAT-001",
   "type": "feat",
   "description": "Set up the monorepo structure with pnpm workspaces, configure the Express backend with TypeScript, SQLite database, JWT authentication (login/register), and tier system. This is the foundational backend that everything else builds on.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "Create root package.json with pnpm workspaces pointing to ['server', 'client']. Add root scripts for dev, build, test.",
     "Create pnpm-workspace.yaml with packages: ['server', 'client'].",
@@ -34,5 +34,5 @@
     "pnpm --filter server run test"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "pnpm 10.28.1 requires onlyBuiltDependencies in root package.json for better-sqlite3 and esbuild native builds. jest.config must be .js (not .ts) unless ts-node is installed. ts-jest needs isolatedModules:true in tsconfig override for NodeNext module resolution. Removed declaration/declarationMap from tsconfig to avoid complex type inference errors with pnpm hoisting."
 }
