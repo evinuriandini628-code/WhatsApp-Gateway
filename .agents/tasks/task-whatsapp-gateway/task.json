@@ -1,0 +1,7 @@
+{
+  "task_id": "task-whatsapp-gateway",
+  "task_description": "Build a full-stack WhatsApp Gateway SaaS website with login/register, WhatsApp number verification via pairing code (using baileys + baileys-antiban), 3-tier subscription system (free/pro/enterprise), professional UI with landing page, and REST API for message sending.",
+  "status": "in_progress",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003"],
+  "blocked_reason": null
+}
