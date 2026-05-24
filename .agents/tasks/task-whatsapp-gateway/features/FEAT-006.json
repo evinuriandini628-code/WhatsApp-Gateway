@@ -2,7 +2,7 @@
   "id": "FEAT-006",
   "type": "feature",
   "description": "Add auto-deploy webhook functionality and fix pnpm compatibility by moving onlyBuiltDependencies to .npmrc",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "Remove pnpm field from package.json and create .npmrc with onlyBuiltDependencies config",
     "Create deploy.sh script at project root",
@@ -25,5 +25,5 @@
     "pnpm run test"
   ],
   "blocked_reason": null,
-  "findings": null
+  "findings": "All changes implemented successfully. pnpm onlyBuiltDependencies moved from package.json to .npmrc. deploy.sh created and made executable. Webhook route created at /api/webhook with GitHub signature verification and push-to-main auto-deploy. Build and all 9 tests pass."
 }
