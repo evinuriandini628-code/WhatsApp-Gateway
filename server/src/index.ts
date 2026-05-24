@@ -4,6 +4,8 @@ import cors from 'cors';
 import helmet from 'helmet';
 import authRoutes from './routes/auth.js';
 import apiKeyRoutes from './routes/api-keys.js';
+import whatsappRoutes from './routes/whatsapp.js';
+import messagesRoutes from './routes/messages.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -14,6 +16,8 @@ app.use(express.json());
 
 app.use('/api/auth', authRoutes);
 app.use('/api/keys', apiKeyRoutes);
+app.use('/api/whatsapp', whatsappRoutes);
+app.use('/api/messages', messagesRoutes);
 
 app.get('/health', (_req: Request, res: Response) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });

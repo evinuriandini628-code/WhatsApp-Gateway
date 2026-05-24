@@ -2,6 +2,7 @@ import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
 import { createTables, seedTierLimits } from './schema.js';
+import { runMigrations } from './migrations.js';
 
 const dbPath = process.env.DATABASE_PATH || './data/gateway.db';
 const dbDir = path.dirname(dbPath);
@@ -17,5 +18,6 @@ db.pragma('foreign_keys = ON');
 
 createTables(db);
 seedTierLimits(db);
+runMigrations(db);
 
 export default db;
