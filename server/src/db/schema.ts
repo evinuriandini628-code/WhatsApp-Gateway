@@ -26,7 +26,7 @@ export function createTables(db: Database.Database): void {
     CREATE TABLE IF NOT EXISTS api_keys (
       id TEXT PRIMARY KEY,
       user_id TEXT NOT NULL,
-      key TEXT UNIQUE NOT NULL,
+      key TEXT NOT NULL DEFAULT '',
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
       last_used TEXT,
       FOREIGN KEY (user_id) REFERENCES users(id)
@@ -44,7 +44,15 @@ export function createTables(db: Database.Database): void {
       timestamp TEXT NOT NULL DEFAULT (datetime('now')),
       FOREIGN KEY (user_id) REFERENCES users(id)
     );
+
+    CREATE INDEX IF NOT EXISTS idx_request_log_user_timestamp
+      ON request_log (user_id, timestamp);
   `);
+}
+
+export function cleanupRequestLog(db: Database.Database): void {
+  const cutoff = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+  db.prepare('DELETE FROM request_log WHERE timestamp < ?').run(cutoff);
 }
 
 export function seedTierLimits(db: Database.Database): void {

@@ -8,13 +8,12 @@ import whatsappService from '../services/whatsapp.service.js';
 const router = Router();
 
 router.use(authenticate);
-router.use(tierRateLimit);
 
 /**
  * POST /api/whatsapp/connect
  * Connect a new WhatsApp number using pairing code.
  */
-router.post('/connect', async (req: AuthRequest, res: Response): Promise<void> => {
+router.post('/connect', tierRateLimit, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const userId = req.user!.id;
     const tier = req.user!.tier;
@@ -106,7 +105,7 @@ router.get('/sessions/:id/status', (req: AuthRequest, res: Response): void => {
  * DELETE /api/whatsapp/sessions/:id
  * Disconnect and remove a WhatsApp session.
  */
-router.delete('/sessions/:id', async (req: AuthRequest, res: Response): Promise<void> => {
+router.delete('/sessions/:id', tierRateLimit, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const userId = req.user!.id;
     const sessionId = req.params.id as string;

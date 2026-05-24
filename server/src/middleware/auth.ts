@@ -2,14 +2,7 @@ import { Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import db from '../db/index.js';
 import { AuthRequest, User } from '../types/index.js';
-
-function getJwtSecret(): string {
-  const secret = process.env.JWT_SECRET;
-  if (!secret && process.env.NODE_ENV !== 'test') {
-    throw new Error('JWT_SECRET environment variable is required');
-  }
-  return secret || 'test-secret-do-not-use-in-production';
-}
+import { getJwtSecret } from '../utils/jwt.js';
 
 const JWT_SECRET = getJwtSecret();
 
