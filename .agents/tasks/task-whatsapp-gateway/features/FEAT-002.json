@@ -2,7 +2,7 @@
   "id": "FEAT-002",
   "type": "feat",
   "description": "Implement the WhatsApp connection service using Baileys + baileys-antiban with pairing code authentication. This handles connecting user WhatsApp numbers, managing sessions, and exposing a message-sending API.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "Create server/src/services/whatsapp.service.ts - WhatsAppService class that manages multiple Baileys socket connections. Methods: initConnection(userId, phoneNumber) - creates a new Baileys socket with baileys-antiban wrapSocket, requests pairing code and returns it. confirmConnection(userId, phoneNumber) - marks session as connected once connection event fires. disconnectSession(userId, sessionId). getSessionStatus(userId, sessionId). sendMessage(userId, sessionId, to, message).",
     "In whatsapp.service.ts, configure Baileys with: printQRInTerminal: false (we use pairing code), auth state stored per session using useMultiFileAuthState from baileys in SESSION_PATH/<userId>/<phoneNumber>/. Wrap socket with wrapSocket from baileys-antiban for anti-ban protection.",
@@ -28,5 +28,5 @@
     "pnpm --filter server run test"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "baileys@7.0.0-rc13 and baileys-antiban@3.9.0 installed. Express v5 types require 'as string' cast on req.params values. @hapi/boom added as explicit dependency for Boom type import in disconnect reason handling. Build and existing tests pass cleanly."
 }
