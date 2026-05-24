@@ -2,7 +2,7 @@
   "id": "FEAT-004",
   "type": "fix",
   "description": "Address code review issues: field name mismatch, hardcoded JWT secret, rate-limit middleware, API key auth, graceful shutdown, path sanitization, plaintext API keys, and duplicate tier constants.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "Add camelCase serialization layer on server responses for sessions and API keys",
     "Remove hardcoded JWT secret fallback and throw on startup if JWT_SECRET is not set (except test env)",
@@ -29,5 +29,5 @@
     "pnpm --filter server run test"
   ],
   "blocked_reason": null,
-  "findings": null
+  "findings": "All 8 review issues addressed. API keys no longer stored in plaintext (SHA-256 hash used). Rate limit middleware wired into both whatsapp and messages routes. Messages route supports both JWT and X-API-Key auth. Graceful shutdown added. Path sanitization added. Tiers endpoint created. All server and client builds pass, all tests pass."
 }
