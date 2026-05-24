@@ -3,8 +3,8 @@ import { Plus, Copy, Trash2, Key, Check } from 'lucide-react';
 import api from '../lib/api';
 
 interface ApiKey {
-  id: number;
-  key: string;
+  id: string;
+  key?: string;
   name: string;
   createdAt: string;
   lastUsed?: string;
@@ -16,7 +16,8 @@ export default function ApiKeys() {
   const [creating, setCreating] = useState(false);
   const [newKeyName, setNewKeyName] = useState('');
   const [showCreate, setShowCreate] = useState(false);
-  const [copiedId, setCopiedId] = useState<number | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [newlyCreatedKey, setNewlyCreatedKey] = useState<ApiKey | null>(null);
 
   const fetchKeys = async () => {
     try {
@@ -38,7 +39,14 @@ export default function ApiKeys() {
     setCreating(true);
     try {
       const res = await api.post('/keys', { name: newKeyName });
-      setKeys((prev) => [...prev, res.data.key]);
+      const created: ApiKey = {
+        id: res.data.id,
+        key: res.data.key,
+        name: res.data.name,
+        createdAt: res.data.createdAt,
+      };
+      setNewlyCreatedKey(created);
+      setKeys((prev) => [...prev, { id: created.id, name: created.name, createdAt: created.createdAt }]);
       setNewKeyName('');
       setShowCreate(false);
     } catch {
@@ -48,24 +56,22 @@ export default function ApiKeys() {
     }
   };
 
-  const handleRevoke = async (keyId: number) => {
+  const handleRevoke = async (keyId: string) => {
     try {
       await api.delete(`/keys/${keyId}`);
       setKeys((prev) => prev.filter((k) => k.id !== keyId));
+      if (newlyCreatedKey?.id === keyId) {
+        setNewlyCreatedKey(null);
+      }
     } catch {
       // Handle error
     }
   };
 
-  const handleCopy = (key: string, id: number) => {
+  const handleCopy = (key: string, id: string) => {
     navigator.clipboard.writeText(key);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
-  };
-
-  const maskKey = (key: string) => {
-    if (key.length <= 8) return key;
-    return key.substring(0, 8) + '...' + key.substring(key.length - 4);
   };
 
   if (loading) {
@@ -117,6 +123,33 @@ export default function ApiKeys() {
         </div>
       )}
 
+      {newlyCreatedKey && newlyCreatedKey.key && (
+        <div className="bg-green-50 border border-green-200 rounded-xl p-6 mb-6">
+          <h3 className="text-lg font-semibold text-green-900 mb-2">API Key Created</h3>
+          <p className="text-sm text-green-700 mb-3">
+            Copy your API key now. You will not be able to see it again.
+          </p>
+          <div className="flex items-center gap-2">
+            <code className="flex-1 bg-white px-4 py-2 rounded-lg border border-green-200 font-mono text-sm break-all">
+              {newlyCreatedKey.key}
+            </code>
+            <button
+              onClick={() => handleCopy(newlyCreatedKey.key!, newlyCreatedKey.id)}
+              className="p-2 text-green-600 hover:bg-green-100 rounded-lg transition-colors"
+              title="Copy to clipboard"
+            >
+              {copiedId === newlyCreatedKey.id ? <Check className="h-5 w-5" /> : <Copy className="h-5 w-5" />}
+            </button>
+          </div>
+          <button
+            onClick={() => setNewlyCreatedKey(null)}
+            className="mt-3 text-sm text-green-700 hover:text-green-900"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
       {keys.length === 0 ? (
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
           <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -141,17 +174,13 @@ export default function ApiKeys() {
                 </div>
                 <div>
                   <p className="font-medium text-gray-900">{key.name || 'Unnamed Key'}</p>
-                  <p className="text-sm text-gray-500 font-mono">{maskKey(key.key)}</p>
+                  <p className="text-xs text-gray-400">
+                    Created {new Date(key.createdAt).toLocaleDateString()}
+                    {key.lastUsed && ` | Last used ${new Date(key.lastUsed).toLocaleDateString()}`}
+                  </p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <button
-                  onClick={() => handleCopy(key.key, key.id)}
-                  className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
-                  title="Copy to clipboard"
-                >
-                  {copiedId === key.id ? <Check className="h-5 w-5 text-green-500" /> : <Copy className="h-5 w-5" />}
-                </button>
                 <button
                   onClick={() => handleRevoke(key.id)}
                   className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"

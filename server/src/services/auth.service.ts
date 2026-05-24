@@ -4,7 +4,15 @@ import { v4 as uuidv4 } from 'uuid';
 import db from '../db/index.js';
 import { User } from '../types/index.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'change-me-in-production';
+function getJwtSecret(): string {
+  const secret = process.env.JWT_SECRET;
+  if (!secret && process.env.NODE_ENV !== 'test') {
+    throw new Error('JWT_SECRET environment variable is required');
+  }
+  return secret || 'test-secret-do-not-use-in-production';
+}
+
+const JWT_SECRET = getJwtSecret();
 const TOKEN_EXPIRY = '7d';
 
 export interface AuthResult {

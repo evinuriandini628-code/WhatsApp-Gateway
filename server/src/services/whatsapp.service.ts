@@ -27,7 +27,10 @@ class WhatsAppService {
   }
 
   private getSessionDir(userId: string, phoneNumber: string): string {
-    return path.join(SESSION_PATH, userId, phoneNumber);
+    // Defense-in-depth: strip any non-digit characters to prevent path traversal
+    const sanitizedPhone = phoneNumber.replace(/\D/g, '');
+    const sanitizedUserId = userId.replace(/[^a-zA-Z0-9\-]/g, '');
+    return path.join(SESSION_PATH, sanitizedUserId, sanitizedPhone);
   }
 
   /**
@@ -326,6 +329,16 @@ class WhatsAppService {
     }
 
     this.connections.delete(key);
+  }
+
+  /**
+   * Shut down all active connections gracefully.
+   */
+  shutdownAll(): void {
+    for (const key of this.connections.keys()) {
+      this.cleanupConnection(key);
+    }
+    this.connections.clear();
   }
 
   /**

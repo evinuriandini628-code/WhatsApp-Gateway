@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import { registerUser, loginUser } from '../services/auth.service.js';
 import { authenticate } from '../middleware/auth.js';
 import { AuthRequest } from '../types/index.js';
+import { serializeUser } from '../utils/serialize.js';
 
 const router = Router();
 
@@ -20,7 +21,7 @@ router.post('/register', async (req: AuthRequest, res: Response): Promise<void> 
     }
 
     const result = await registerUser(email, password, name);
-    res.status(201).json(result);
+    res.status(201).json({ user: serializeUser(result.user), token: result.token });
   } catch (error: any) {
     if (error.message === 'User with this email already exists') {
       res.status(409).json({ error: error.message });
@@ -40,7 +41,7 @@ router.post('/login', async (req: AuthRequest, res: Response): Promise<void> => 
     }
 
     const result = await loginUser(email, password);
-    res.json(result);
+    res.json({ user: serializeUser(result.user), token: result.token });
   } catch (error: any) {
     if (error.message === 'Invalid email or password') {
       res.status(401).json({ error: error.message });
@@ -51,7 +52,7 @@ router.post('/login', async (req: AuthRequest, res: Response): Promise<void> => 
 });
 
 router.get('/me', authenticate, (req: AuthRequest, res: Response): void => {
-  res.json({ user: req.user });
+  res.json({ user: serializeUser(req.user!) });
 });
 
 export default router;
