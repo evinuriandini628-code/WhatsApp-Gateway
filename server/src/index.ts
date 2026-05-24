@@ -9,6 +9,7 @@ import messagesRoutes from './routes/messages.js';
 import tiersRoutes from './routes/tiers.js';
 import whatsappService from './services/whatsapp.service.js';
 import db from './db/index.js';
+import { cleanupRequestLog } from './db/schema.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -36,12 +37,19 @@ const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 
+// Cleanup old request_log entries on startup and every hour
+cleanupRequestLog(db);
+const cleanupInterval = setInterval(() => cleanupRequestLog(db), 60 * 60 * 1000);
+
 // Graceful shutdown
 function shutdown(signal: string) {
   console.log(`\n${signal} received. Shutting down gracefully...`);
 
   server.close(() => {
     console.log('HTTP server closed.');
+
+    // Stop periodic cleanup
+    clearInterval(cleanupInterval);
 
     // Close all WhatsApp connections
     whatsappService.shutdownAll();

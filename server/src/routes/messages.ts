@@ -12,13 +12,12 @@ const router = Router();
 // Messages routes support both JWT and API key auth
 router.use(authenticateOptionalJwt);
 router.use(authenticateApiKey);
-router.use(tierRateLimit);
 
 /**
  * POST /api/messages/send
  * Send a WhatsApp message through a connected session.
  */
-router.post('/send', async (req: AuthRequest, res: Response): Promise<void> => {
+router.post('/send', tierRateLimit, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const userId = req.user!.id;
     const tier = req.user!.tier;
