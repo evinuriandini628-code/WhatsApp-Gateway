@@ -1,0 +1,32 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "Implement the WhatsApp connection service using Baileys + baileys-antiban with pairing code authentication. This handles connecting user WhatsApp numbers, managing sessions, and exposing a message-sending API.",
+  "status": "completed",
+  "steps": [
+    "Create server/src/services/whatsapp.service.ts - WhatsAppService class that manages multiple Baileys socket connections. Methods: initConnection(userId, phoneNumber) - creates a new Baileys socket with baileys-antiban wrapSocket, requests pairing code and returns it. confirmConnection(userId, phoneNumber) - marks session as connected once connection event fires. disconnectSession(userId, sessionId). getSessionStatus(userId, sessionId). sendMessage(userId, sessionId, to, message).",
+    "In whatsapp.service.ts, configure Baileys with: printQRInTerminal: false (we use pairing code), auth state stored per session using useMultiFileAuthState from baileys in SESSION_PATH/<userId>/<phoneNumber>/. Wrap socket with wrapSocket from baileys-antiban for anti-ban protection.",
+    "In whatsapp.service.ts, handle connection events: on 'connection.update' - detect open/close states, update session status in database. On 'creds.update' - save credentials. Handle reconnection logic with exponential backoff.",
+    "Create server/src/routes/whatsapp.ts - POST /api/whatsapp/connect (phoneNumber) - validates user tier allows another number, calls initConnection, returns pairing code. GET /api/whatsapp/sessions - list user's connected sessions with status. DELETE /api/whatsapp/sessions/:id - disconnect and remove session. GET /api/whatsapp/sessions/:id/status - get real-time status of a session.",
+    "Create server/src/routes/messages.ts - POST /api/messages/send (sessionId, to, message) - validates session belongs to user and is connected, checks rate limit, sends message via whatsapp service. GET /api/messages/history (sessionId, limit, offset) - basic message log.",
+    "Create server/src/db/migrations.ts - Add messages_log table: id, user_id, session_id, to_number, message_type, content, status, created_at. Track sent messages for rate limiting and history.",
+    "Mount the new routes in server/src/index.ts behind the auth middleware. WhatsApp and message routes require authentication.",
+    "Create server/src/utils/validators.ts - Phone number validation (E.164 format), message content validation, session ownership validation helpers.",
+    "Add tier enforcement in the connect route: check how many active sessions user has vs their tier limit before allowing a new connection."
+  ],
+  "acceptance_criteria": [
+    "POST /api/whatsapp/connect with a valid phone number returns a pairing code string",
+    "Free tier users cannot connect more than 1 WhatsApp number",
+    "Pro tier users can connect up to 5 numbers",
+    "Sessions are persisted to filesystem and survive server restart",
+    "POST /api/messages/send validates session ownership and connection status before sending",
+    "Rate limiting correctly tracks and enforces daily message limits per tier",
+    "The server compiles and builds without TypeScript errors"
+  ],
+  "verification": [
+    "cd /projects/sandbox/WhatsApp-Gateway && pnpm --filter server run build",
+    "pnpm --filter server run test"
+  ],
+  "blocked_reason": null,
+  "findings": "baileys@7.0.0-rc13 and baileys-antiban@3.9.0 installed. Express v5 types require 'as string' cast on req.params values. @hapi/boom added as explicit dependency for Boom type import in disconnect reason handling. Build and existing tests pass cleanly."
+}

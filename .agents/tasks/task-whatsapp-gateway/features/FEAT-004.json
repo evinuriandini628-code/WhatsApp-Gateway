@@ -1,0 +1,33 @@
+{
+  "id": "FEAT-004",
+  "type": "fix",
+  "description": "Address code review issues: field name mismatch, hardcoded JWT secret, rate-limit middleware, API key auth, graceful shutdown, path sanitization, plaintext API keys, and duplicate tier constants.",
+  "status": "completed",
+  "steps": [
+    "Add camelCase serialization layer on server responses for sessions and API keys",
+    "Remove hardcoded JWT secret fallback and throw on startup if JWT_SECRET is not set (except test env)",
+    "Wire tierRateLimit middleware into whatsapp and messages routes or remove dead code",
+    "Add X-API-Key header middleware for alternative auth on message routes",
+    "Add SIGTERM/SIGINT graceful shutdown handlers in server/src/index.ts",
+    "Sanitize phoneNumber in getSessionDir to strip non-digit characters",
+    "Hash API keys with SHA-256 before storing, return full key only on creation",
+    "Add GET /api/tiers endpoint and have dashboard fetch from it"
+  ],
+  "acceptance_criteria": [
+    "Server returns camelCase fields (phoneNumber, createdAt) in session and API key responses",
+    "Server refuses to start without JWT_SECRET env var (except in test mode)",
+    "Rate limit middleware is either wired or dead code is removed",
+    "X-API-Key header provides alternative authentication for message routes",
+    "Server handles SIGTERM/SIGINT gracefully, closing sockets and DB",
+    "getSessionDir strips non-digit characters from phoneNumber",
+    "API keys are hashed with SHA-256 in DB, full key returned only on creation",
+    "GET /api/tiers returns tier limits from DB, dashboard uses it"
+  ],
+  "verification": [
+    "pnpm --filter server run build",
+    "pnpm --filter client run build",
+    "pnpm --filter server run test"
+  ],
+  "blocked_reason": null,
+  "findings": "All 8 review issues addressed. API keys no longer stored in plaintext (SHA-256 hash used). Rate limit middleware wired into both whatsapp and messages routes. Messages route supports both JWT and X-API-Key auth. Graceful shutdown added. Path sanitization added. Tiers endpoint created. All server and client builds pass, all tests pass."
+}

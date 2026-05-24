@@ -1,0 +1,26 @@
+{
+  "id": "FEAT-005",
+  "type": "fix",
+  "description": "Address v2 code review issues: UNIQUE constraint on api_keys.key, unbounded request_log, hardcoded Pricing page, rate limit scope, and duplicate getJwtSecret.",
+  "status": "completed",
+  "steps": [
+    "Remove UNIQUE constraint from api_keys.key column in schema.ts (key_hash is now the lookup column)",
+    "Add index on (user_id, timestamp) for request_log; add cleanup function for rows older than 48 hours, called on startup and every hour",
+    "Update Pricing.tsx to fetch tier data from GET /api/tiers instead of hardcoding limits",
+    "Apply tierRateLimit only to POST/DELETE (mutation) endpoints, not GET endpoints in whatsapp and messages routers",
+    "Extract getJwtSecret() to server/src/utils/jwt.ts and import in both middleware/auth.ts and services/auth.service.ts"
+  ],
+  "acceptance_criteria": [
+    "api_keys.key column has no UNIQUE constraint, allowing multiple keys with empty string value",
+    "request_log has an index on (user_id, timestamp) and rows older than 48 hours are cleaned periodically",
+    "Pricing.tsx fetches and renders real tier limits from /api/tiers",
+    "GET requests to /api/whatsapp and /api/messages do not consume rate limit budget",
+    "getJwtSecret exists in a single shared utility and is imported by both auth.ts and auth.service.ts"
+  ],
+  "verification": [
+    "pnpm run build",
+    "pnpm run test"
+  ],
+  "blocked_reason": null,
+  "findings": "All 5 v2 review issues addressed. UNIQUE constraint removed from api_keys.key. Request log now has index and periodic cleanup (startup + hourly). Pricing page fetches from /api/tiers. Rate limit only applies to mutation endpoints (POST/DELETE). getJwtSecret extracted to shared utils/jwt.ts. Build and all tests pass."
+}
