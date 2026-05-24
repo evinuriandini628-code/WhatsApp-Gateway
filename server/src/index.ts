@@ -12,7 +12,7 @@ import db from './db/index.js';
 import { cleanupRequestLog } from './db/schema.js';
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 7842;
 
 app.use(helmet());
 app.use(cors());
