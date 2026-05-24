@@ -1,0 +1,38 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "Set up the monorepo structure with pnpm workspaces, configure the Express backend with TypeScript, SQLite database, JWT authentication (login/register), and tier system. This is the foundational backend that everything else builds on.",
+  "status": "in_progress",
+  "steps": [
+    "Create root package.json with pnpm workspaces pointing to ['server', 'client']. Add root scripts for dev, build, test.",
+    "Create pnpm-workspace.yaml with packages: ['server', 'client'].",
+    "Create server/package.json with dependencies: express, cors, helmet, jsonwebtoken, bcryptjs, better-sqlite3, dotenv, baileys (^7.0.0-rc13), baileys-antiban (^3.9.0), express-rate-limit, uuid. DevDeps: typescript, @types/express, @types/cors, @types/jsonwebtoken, @types/bcryptjs, @types/better-sqlite3, @types/uuid, tsx, jest, @types/jest, ts-jest.",
+    "Create server/tsconfig.json targeting ES2022, module NodeNext, outDir ./dist, rootDir ./src, strict mode.",
+    "Create server/src/db/schema.ts - Initialize SQLite database with better-sqlite3. Tables: users (id, email, password_hash, name, tier, created_at, updated_at), whatsapp_sessions (id, user_id, phone_number, status, session_data_path, created_at, last_connected), api_keys (id, user_id, key, created_at, last_used). Tier enum: 'free', 'pro', 'enterprise'. Add tier_limits table with columns: tier, max_numbers, max_requests_per_day.",
+    "Create server/src/db/index.ts - Export db instance, run migrations on first load. Seed tier_limits: free(1 number, 100 req/day), pro(5 numbers, 5000 req/day), enterprise(20 numbers, 50000 req/day).",
+    "Create server/src/middleware/auth.ts - JWT verification middleware. Extract token from Authorization header, verify with secret, attach user to request.",
+    "Create server/src/middleware/rateLimit.ts - Rate limiting middleware that checks user tier against their daily request count. Track usage in a request_log table or in-memory counter.",
+    "Create server/src/services/auth.service.ts - Functions: registerUser(email, password, name), loginUser(email, password), getUserById(id). Passwords hashed with bcryptjs. Returns JWT token on success.",
+    "Create server/src/routes/auth.ts - POST /api/auth/register (email, password, name), POST /api/auth/login (email, password), GET /api/auth/me (protected, returns user info with tier).",
+    "Create server/src/routes/api-keys.ts - POST /api/keys (generate new API key), GET /api/keys (list user's keys), DELETE /api/keys/:id (revoke key).",
+    "Create server/src/index.ts - Express app setup: cors, helmet, json body parser, mount auth routes, mount api-key routes. Listen on PORT from env (default 3001). Error handling middleware.",
+    "Create .env.example with: PORT=3001, JWT_SECRET=change-me-in-production, DATABASE_PATH=./data/gateway.db, SESSION_PATH=./sessions.",
+    "Create server/src/types/index.ts - Type definitions: User, WhatsAppSession, ApiKey, TierLimits, AuthRequest (extends Express Request)."
+  ],
+  "acceptance_criteria": [
+    "Running pnpm install at root installs all dependencies for server workspace",
+    "Running pnpm --filter server run build compiles TypeScript without errors",
+    "The SQLite database is created on first run with all required tables",
+    "POST /api/auth/register creates a new user and returns a JWT token",
+    "POST /api/auth/login with valid credentials returns a JWT token",
+    "GET /api/auth/me with valid token returns user info including tier",
+    "Rate limiting middleware correctly limits requests based on tier"
+  ],
+  "verification": [
+    "cd /projects/sandbox/WhatsApp-Gateway && pnpm install",
+    "pnpm --filter server run build",
+    "pnpm --filter server run test"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}
