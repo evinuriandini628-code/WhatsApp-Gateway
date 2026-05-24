@@ -7,6 +7,7 @@ import apiKeyRoutes from './routes/api-keys.js';
 import whatsappRoutes from './routes/whatsapp.js';
 import messagesRoutes from './routes/messages.js';
 import tiersRoutes from './routes/tiers.js';
+import webhookRoutes from './routes/webhook.js';
 import whatsappService from './services/whatsapp.service.js';
 import db from './db/index.js';
 import { cleanupRequestLog } from './db/schema.js';
@@ -23,6 +24,7 @@ app.use('/api/keys', apiKeyRoutes);
 app.use('/api/whatsapp', whatsappRoutes);
 app.use('/api/messages', messagesRoutes);
 app.use('/api/tiers', tiersRoutes);
+app.use('/api/webhook', webhookRoutes);
 
 app.get('/health', (_req: Request, res: Response) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });

@@ -6,11 +6,5 @@
     "dev": "pnpm --filter server run dev & pnpm --filter client run dev",
     "build": "pnpm --filter server run build && pnpm --filter client run build",
     "test": "pnpm --filter server run test && pnpm --filter client run test"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "better-sqlite3",
-      "esbuild"
-    ]
   }
 }

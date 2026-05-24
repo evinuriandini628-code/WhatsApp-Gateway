@@ -1,0 +1,29 @@
+{
+  "id": "FEAT-006",
+  "type": "feature",
+  "description": "Add auto-deploy webhook functionality and fix pnpm compatibility by moving onlyBuiltDependencies to .npmrc",
+  "status": "in_progress",
+  "steps": [
+    "Remove pnpm field from package.json and create .npmrc with onlyBuiltDependencies config",
+    "Create deploy.sh script at project root",
+    "Create server/src/routes/webhook.ts with GitHub webhook handler",
+    "Register webhook route in server/src/index.ts",
+    "Update .env.example with webhook-related variables",
+    "Make deploy.sh executable"
+  ],
+  "acceptance_criteria": [
+    "package.json no longer has pnpm field",
+    ".npmrc exists with onlyBuiltDependencies for better-sqlite3 and esbuild",
+    "deploy.sh exists and is executable",
+    "webhook.ts handles GitHub push events with signature verification",
+    "Webhook route is registered at /api/webhook in index.ts",
+    ".env.example includes WEBHOOK_SECRET and DEPLOY_SCRIPT",
+    "Project builds successfully"
+  ],
+  "verification": [
+    "pnpm run build",
+    "pnpm run test"
+  ],
+  "blocked_reason": null,
+  "findings": null
+}
